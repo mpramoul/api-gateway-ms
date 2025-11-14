@@ -1,14 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, HttpStatus, HttpException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Controller('users')
 export class UsersController {
+  constructor(@Inject("AUTH_SERVICE") private readonly clientProxy: ClientProxy) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return 'UserController_API_GATEWAY';
-    //return this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto) {
+    try {
+    const register_user = await firstValueFrom(this.clientProxy.send({cmd:'register_user'}, createUserDto));
+    return register_user;
+    } catch (error) {
+      console.log('CATCH', error);
+      throw new HttpException({
+        message: error.message,
+        errors: error.errors,
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   @Get()
