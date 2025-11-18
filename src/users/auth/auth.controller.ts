@@ -15,7 +15,7 @@ export class AuthController {
       const auth_login = await firstValueFrom(this.clientProxy.send({cmd:'login'}, authLoginDto))
       return auth_login;
     } catch (error) {
-      console.log(error);
+      console.log('CATCH', error);
       throw new HttpException({
         message: error.message,
         errors: error.errors,
@@ -35,6 +35,5 @@ export class AuthController {
         errors: error.errors,
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return createUserDto;
   }
 }
